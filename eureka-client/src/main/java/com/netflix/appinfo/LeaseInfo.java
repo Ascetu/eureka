@@ -32,6 +32,7 @@ import com.thoughtworks.xstream.annotations.XStreamOmitField;
  * </p>
  *
  * 租约信息
+ * 跟踪上次续约的时间，即动态变化的信息（注册时间、上次续约时间、剔除时间、up时间）
  *
  * @author Karthik Ranganathan, Greg Kim
  */

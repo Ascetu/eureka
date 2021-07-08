@@ -45,18 +45,19 @@ import static com.netflix.appinfo.PropertyBasedInstanceConfigConstants.*;
  * to <em>eureka-client.properties</em>.
  * </p>
  *
- * Eureka 基于配置文件的应用实例配置抽象基类
+ * Eureka 基于【配置文件】的应用实例配置抽象基类
+ * 默认配置文件名：eureka-client 基于Archaius1，todo 普通配置文件如properties、yml Archaius1可以用吗
  *
  * @author Karthik Ranganathan
  */
 public abstract class PropertiesInstanceConfig extends AbstractInstanceConfig implements EurekaInstanceConfig {
 
     /**
-     * 命名空间
+     * 命名空间，默认eureka.
      */
     protected final String namespace;
     /**
-     * 配置文件对象
+     * 配置文件对象实例，所有的配置属性都可以从这里取到，从eureka-client文件读取
      */
     protected final DynamicPropertyFactory configInstance;
     /**
@@ -84,7 +85,7 @@ public abstract class PropertiesInstanceConfig extends AbstractInstanceConfig im
         this.namespace = namespace.endsWith(".")
                 ? namespace
                 : namespace + ".";
-        // 从 环境变量 获取 应用分组
+        // 从 环境变量 获取 应用分组 todo
         appGrpNameFromEnv = ConfigurationManager.getConfigInstance()
                 .getString(FALLBACK_APP_GROUP_KEY, Values.UNKNOWN_APPLICATION);
         // 初始化 配置文件对象
@@ -98,6 +99,7 @@ public abstract class PropertiesInstanceConfig extends AbstractInstanceConfig im
      */
     @Override
     public boolean isInstanceEnabledOnit() {
+//        eureka.traffic.enabled
         return configInstance.getBooleanProperty(namespace + TRAFFIC_ENABLED_ON_INIT_KEY,
                 super.isInstanceEnabledOnit()).get();
     }
@@ -109,6 +111,7 @@ public abstract class PropertiesInstanceConfig extends AbstractInstanceConfig im
      */
     @Override
     public int getNonSecurePort() {
+//        eureka.port
         return configInstance.getIntProperty(namespace + PORT_KEY, super.getNonSecurePort()).get();
     }
 
@@ -119,6 +122,7 @@ public abstract class PropertiesInstanceConfig extends AbstractInstanceConfig im
      */
     @Override
     public int getSecurePort() {
+        //        eureka.securePort
         return configInstance.getIntProperty(namespace + SECURE_PORT_KEY, super.getSecurePort()) .get();
     }
 
@@ -129,6 +133,7 @@ public abstract class PropertiesInstanceConfig extends AbstractInstanceConfig im
      */
     @Override
     public boolean isNonSecurePortEnabled() {
+        //        eureka.port.enabled
         return configInstance.getBooleanProperty(namespace + PORT_ENABLED_KEY, super.isNonSecurePortEnabled()).get();
     }
 
@@ -139,6 +144,7 @@ public abstract class PropertiesInstanceConfig extends AbstractInstanceConfig im
      */
     @Override
     public boolean getSecurePortEnabled() {
+        //        eureka.securePort.enabled
         return configInstance.getBooleanProperty(namespace + SECURE_PORT_ENABLED_KEY,
                 super.getSecurePortEnabled()).get();
     }
@@ -152,6 +158,7 @@ public abstract class PropertiesInstanceConfig extends AbstractInstanceConfig im
      */
     @Override
     public int getLeaseRenewalIntervalInSeconds() {
+//        eureka.lease.renewalInterval
         return configInstance.getIntProperty(namespace + LEASE_RENEWAL_INTERVAL_KEY,
                 super.getLeaseRenewalIntervalInSeconds()).get();
     }
@@ -164,6 +171,7 @@ public abstract class PropertiesInstanceConfig extends AbstractInstanceConfig im
      */
     @Override
     public int getLeaseExpirationDurationInSeconds() {
+//        eureka.lease.duration
         return configInstance.getIntProperty(namespace + LEASE_EXPIRATION_DURATION_KEY,
                 super.getLeaseExpirationDurationInSeconds()).get();
     }
@@ -175,6 +183,7 @@ public abstract class PropertiesInstanceConfig extends AbstractInstanceConfig im
      */
     @Override
     public String getVirtualHostName() {
+        // http eureka.vipAddress hostname+port?
         if (this.isNonSecurePortEnabled()) {
             return configInstance.getStringProperty(namespace + VIRTUAL_HOSTNAME_KEY,
                     super.getVirtualHostName()).get();
@@ -191,6 +200,7 @@ public abstract class PropertiesInstanceConfig extends AbstractInstanceConfig im
      */
     @Override
     public String getSecureVirtualHostName() {
+        // https eureka.secureVipAddress
         if (this.getSecurePortEnabled()) {
             return configInstance.getStringProperty(namespace + SECURE_VIRTUAL_HOSTNAME_KEY,
                     super.getSecureVirtualHostName()).get();
@@ -206,6 +216,7 @@ public abstract class PropertiesInstanceConfig extends AbstractInstanceConfig im
      */
     @Override
     public String getASGName() {
+        //eureka.asgName
         return configInstance.getStringProperty(namespace + ASG_NAME_KEY, super.getASGName()).get();
     }
 
@@ -221,9 +232,11 @@ public abstract class PropertiesInstanceConfig extends AbstractInstanceConfig im
      */
     @Override
     public Map<String, String> getMetadataMap() {
+//        eureka.metadata.****
         String metadataNamespace = namespace + INSTANCE_METADATA_PREFIX + ".";
         Map<String, String> metadataMap = new LinkedHashMap<String, String>();
         Configuration config = (Configuration) configInstance.getBackingConfigurationSource();
+//        todo ???多了一个“.”??
         String subsetPrefix = metadataNamespace.charAt(metadataNamespace.length() - 1) == '.'
                 ? metadataNamespace.substring(0, metadataNamespace.length() - 1)
                 : metadataNamespace;
@@ -237,20 +250,24 @@ public abstract class PropertiesInstanceConfig extends AbstractInstanceConfig im
 
     @Override
     public String getInstanceId() {
+//        eureka.instanceId
         String result = configInstance.getStringProperty(namespace + INSTANCE_ID_KEY, null).get();
         return result == null ? null : result.trim();
     }
 
     @Override
     public String getAppname() {
+//        eureka.name
         return configInstance.getStringProperty(namespace + APP_NAME_KEY, Values.UNKNOWN_APPLICATION).get().trim();
     }
 
     @Override
     public String getAppGroupName() {
+//        eureka.appGroup
         return configInstance.getStringProperty(namespace + APP_GROUP_KEY, appGrpNameFromEnv).get().trim();
     }
 
+    //本机IP
     public String getIpAddress() {
         return super.getIpAddress();
     }
@@ -258,12 +275,14 @@ public abstract class PropertiesInstanceConfig extends AbstractInstanceConfig im
 
     @Override
     public String getStatusPageUrlPath() {
+//        eureka.statusPageUrlPath
         return configInstance.getStringProperty(namespace + STATUS_PAGE_URL_PATH_KEY,
                 Values.DEFAULT_STATUSPAGE_URLPATH).get();
     }
 
     @Override
     public String getStatusPageUrl() {
+//        eureka.statusPageUrl
         return configInstance.getStringProperty(namespace + STATUS_PAGE_URL_KEY, null)
                 .get();
     }
@@ -271,36 +290,42 @@ public abstract class PropertiesInstanceConfig extends AbstractInstanceConfig im
 
     @Override
     public String getHomePageUrlPath() {
+//        eureka.homePageUrlPath
         return configInstance.getStringProperty(namespace + HOME_PAGE_URL_PATH_KEY,
                 Values.DEFAULT_HOMEPAGE_URLPATH).get();
     }
 
     @Override
     public String getHomePageUrl() {
+//        eureka.homePageUrl
         return configInstance.getStringProperty(namespace + HOME_PAGE_URL_KEY, null)
                 .get();
     }
 
     @Override
     public String getHealthCheckUrlPath() {
+//        eureka.healthCheckUrlPath
         return configInstance.getStringProperty(namespace + HEALTHCHECK_URL_PATH_KEY,
                 Values.DEFAULT_HEALTHCHECK_URLPATH).get();
     }
 
     @Override
     public String getHealthCheckUrl() {
+//        eureka.healthCheckUrl
         return configInstance.getStringProperty(namespace + HEALTHCHECK_URL_KEY, null)
                 .get();
     }
 
     @Override
     public String getSecureHealthCheckUrl() {
+//        eureka.secureHealthCheckUrl
         return configInstance.getStringProperty(namespace + SECURE_HEALTHCHECK_URL_KEY,
                 null).get();
     }
 
     @Override
     public String[] getDefaultAddressResolutionOrder() {
+//        eureka.defaultAddressResolutionOrder
         String result = configInstance.getStringProperty(namespace + DEFAULT_ADDRESS_RESOLUTION_ORDER_KEY, null).get();
         return result == null ? new String[0] : result.split(",");
     }

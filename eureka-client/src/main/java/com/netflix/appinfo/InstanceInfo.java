@@ -45,6 +45,9 @@ import java.util.function.Function;
  * </p>
  *
  * 应用实例信息
+ * 基本上都是基于EurekaInstanceConfig的属性生成，大致一样
+ * 多了一些：状态、租约动态信息（各种时间）、是否“脏页”、动作类型？、时间信息等动态的信息
+ * todo builder里的set方法，抽时间仔细看一下，因为通过set可以发现被调用的时候的行为，某些关键逻辑就在这些方法里，比如setStatus
  *
  * @author Karthik Ranganathan, Greg Kim
  */
@@ -168,10 +171,18 @@ public class InstanceInfo {
      */
     private volatile String hostName;
 
+//    UP, // Ready to receive traffic
+//    DOWN, // Do not send traffic- healthcheck callback failed
+//    STARTING, // Just about starting- initializations to be done - do not
+//    // send traffic
+//    OUT_OF_SERVICE, // Intentionally shutdown for traffic
+//    UNKNOWN;
     private volatile InstanceStatus status = InstanceStatus.UP;
 
+//    todo 含义是什么？
     private volatile InstanceStatus overriddenstatus = InstanceStatus.UNKNOWN;
 
+//    delta，变化
     @XStreamOmitField
     private volatile boolean isInstanceInfoDirty = false;
     /**

@@ -141,7 +141,7 @@ public interface EurekaInstanceConfig {
      *
      * 租约续约频率，单位：秒。
      * 应用不断通过按照该频率发送心跳给 Eureka-Server 以达到续约的作用。
-     * 当 Eureka-Server 超过最大频率未收到续约（心跳），契约失效，进行应用移除。
+     * 当 Eureka-Server 超过最大频率【租约过期时间】未收到续约（心跳），契约失效，进行应用移除。
      * 应用移除后，其他应用无法从 Eureka-Server 获取该应用。
      *
      * @return time in seconds
@@ -157,12 +157,13 @@ public interface EurekaInstanceConfig {
      * Setting this value too long could mean that the traffic could be routed
      * to the instance even though the instance is not alive. Setting this value
      * too small could mean, the instance may be taken out of traffic because of
-     * temporary network glitches.This value to be set to atleast higher than
+     * temporary network glitches.This value to be set to atleast higher than·
      * the value specified in {@link #getLeaseRenewalIntervalInSeconds()}
      * .
      * </p>
      *
      * 租约过期时间，单位：秒
+     * todo ？？？仅仅server用到，client不会用到，为什么不做区分
      *
      * @return value indicating time in seconds.
      */
@@ -220,6 +221,8 @@ public interface EurekaInstanceConfig {
      * Gets the hostname associated with this instance. This is the exact name
      * that would be used by other instances to make calls.
      *
+     * todo 和getVirtualHostName区别？真正的hostname地址吗？
+     *
      * @param refresh
      *            true if the information needs to be refetched, false
      *            otherwise.
@@ -244,6 +247,7 @@ public interface EurekaInstanceConfig {
      * deployed in AWS.
      *
      * 数据中心信息
+     * todo 数据中心是什么意思？
      *
      * @return information that indicates which data center this instance is
      *         deployed in.
@@ -256,6 +260,7 @@ public interface EurekaInstanceConfig {
      * using the information supplied in {@link #getHostName(boolean)}.
      *
      * IP 地址
+     * 获取实例的IPAdress。此信息仅用于学术目的，因为来自其他实例的通信主要使用 {@link getHostName(boolean)} 中提供的信息进行
      *
      * @return the ip address of this instance.
      */
@@ -267,6 +272,8 @@ public interface EurekaInstanceConfig {
      * {@link #getHostName(boolean)} and the type of communication - secure or
      * unsecure as specified in {@link #getSecurePort()} and
      * {@link #getNonSecurePort()}.
+     *
+     * 组合使用：hostname+port+path，其他服务查询当前实例状态（todo 什么时候会调用url查询状态？服务之间没有，server通过续约心跳，这个是干嘛用的）
      *
      * <p>
      * It is normally used for informational purposes for other services to find
@@ -284,6 +291,8 @@ public interface EurekaInstanceConfig {
      * resides in the same instance talking to eureka, else in the cases where
      * the instance is a proxy for some other server, users can provide the full
      * {@link java.net.URL}. If the full {@link java.net.URL} is provided it takes precedence.
+     *
+     * 优先级高于getStatusPageUrlPath
      *
      * <p>
      * * It is normally used for informational purposes for other services to
@@ -305,6 +314,8 @@ public interface EurekaInstanceConfig {
      * unsecure as specified in {@link #getSecurePort()} and
      * {@link #getNonSecurePort()}.
      *
+     * 主页（相对地址）
+     *
      * <p>
      * It is normally used for informational purposes for other services to use
      * it as a landing page.
@@ -320,6 +331,8 @@ public interface EurekaInstanceConfig {
      * same instance talking to eureka, else in the cases where the instance is
      * a proxy for some other server, users can provide the full {@link java.net.URL}. If
      * the full {@link java.net.URL} is provided it takes precedence.
+     *
+     * 优先级高于getHomePageUrlPath；todo 主页是做什么用的？server页面上点击查看用的？statusUrl和这个差不多用途吗？
      *
      * <p>
      * It is normally used for informational purposes for other services to use
@@ -339,6 +352,8 @@ public interface EurekaInstanceConfig {
      * unsecure as specified in {@link #getSecurePort()} and
      * {@link #getNonSecurePort()}.
      *
+     * 健康检查path todo 用途？健康检查失败，节点状态变为DOWN，即节点还存在，但是不能接受流量；谁去检查的？
+     *
      * <p>
      * It is normally used for making educated decisions based on the health of
      * the instance - for example, it can be used to determine whether to
@@ -357,6 +372,8 @@ public interface EurekaInstanceConfig {
      * cases where the instance is a proxy for some other server, users can
      * provide the full {@link java.net.URL}. If the full {@link java.net.URL} is provided it
      * takes precedence.
+     *
+     * 优先级高于getHealthCheckUrlPath
      *
      * <p>
      * It is normally used for making educated decisions based on the health of
@@ -378,6 +395,8 @@ public interface EurekaInstanceConfig {
      * the cases where the instance is a proxy for some other server, users can
      * provide the full {@link java.net.URL}. If the full {@link java.net.URL} is provided it
      * takes precedence.
+     *
+     * ssl健康检查url
      *
      * <p>
      * It is normally used for making educated decisions based on the health of
@@ -403,6 +422,8 @@ public interface EurekaInstanceConfig {
      * implementing DataCenterInfo types.
      *
      * // TODO 芋艿，亚马逊，暂时跳过
+     * 默认[]
+     * todo 默认地址？数据中心（DataCenterInfo）相关
      *
      * @return an ordered list of fields that should be used to preferentially
      *         resolve this instance's default address, empty String[] for default.
@@ -413,6 +434,8 @@ public interface EurekaInstanceConfig {
      * Get the namespace used to find properties.
      *
      * 配置命名空间
+     * 用于查找属性； 例如：eureka.client.*****这样？是的，默认默认使用 eureka
+     * 基于配置文件的实现才会实现此方法？PropertiesInstanceConfig
      *
      * @return the namespace used to find properties.
      */

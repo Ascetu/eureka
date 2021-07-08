@@ -43,6 +43,7 @@ public class ServerRequestAuthFilter implements Filter {
         }
     }
 
+    // 仅仅监控一下header
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {

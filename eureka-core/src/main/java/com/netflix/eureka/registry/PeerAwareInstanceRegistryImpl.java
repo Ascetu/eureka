@@ -208,6 +208,8 @@ public class PeerAwareInstanceRegistryImpl extends AbstractInstanceRegistry impl
             }
 
             // 获取注册信息
+            // todo eurekaClient.getApplications()应该只是获取本地的apps才对，启动的时候调用这个，应该还没有数据啊？？
+            // todo 猜测应该不是本地，eurekaClient在server例是作为客户端和其他节点交互的，应该是从其他节点获取，代码在仔细看一下，或者之前就获取了？
             Applications apps = eurekaClient.getApplications();
             for (Application app : apps.getRegisteredApplications()) {
                 for (InstanceInfo instance : app.getInstances()) {

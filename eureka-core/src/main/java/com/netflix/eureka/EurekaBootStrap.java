@@ -115,7 +115,7 @@ public class EurekaBootStrap implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent event) {
         try {
-            // 初始化 Eureka-Server 配置环境
+            // 初始化 Eureka-Server 配置环境（数据中心、配置环境）
             initEurekaEnvironment();
 
             // 初始化 Eureka-Server 上下文
@@ -188,6 +188,9 @@ public class EurekaBootStrap implements ServletContextListener {
         }
 
         // 【2.2.5】创建 应用实例信息的注册表
+        //todo 集群间的注册表？？是的，复制【对AbstractInstanceRegistry的操作】到其他集群节点，那么他和AbstractInstanceRegistry的内容一样吗？还是说他只是持有AbstractInstanceRegistry
+        // todo 好像继承了AbstractInstanceRegistry，继承怎么保证一样呢？
+        //"可以"初始化cache，调度自我保护精度更新等
         PeerAwareInstanceRegistry registry;
         if (isAws(applicationInfoManager.getInfo())) { // AWS 相关，跳过
             registry = new AwsInstanceRegistry(
@@ -208,6 +211,8 @@ public class EurekaBootStrap implements ServletContextListener {
         }
 
         // 【2.2.6】创建 Eureka-Server 集群节点集合
+        // ”可以“定时获取集群节点
+        // todo PeerEurekaNode 真正负责和其他节点交互？到底是PeerEurekaNode还是PeerAwareInstanceRegistry
         PeerEurekaNodes peerEurekaNodes = getPeerEurekaNodes(
                 registry,
                 eurekaServerConfig,
@@ -229,11 +234,13 @@ public class EurekaBootStrap implements ServletContextListener {
         EurekaServerContextHolder.initialize(serverContext);
 
         // 【2.2.9】初始化 Eureka-Server 上下文
+        // 这里初始化上下文，会启动peerEurekaNodes（集群节点同步），registry初始化（初始化cache，调度自我保护精度更新等）
         serverContext.initialize();
         logger.info("Initialized server context");
 
         // 【2.2.10】从其他 Eureka-Server 拉取注册信息
         // Copy registry from neighboring eureka node
+        // todo 没看到具体拉取的地方
         int registryCount = registry.syncUp();
         registry.openForTraffic(applicationInfoManager, registryCount);
 

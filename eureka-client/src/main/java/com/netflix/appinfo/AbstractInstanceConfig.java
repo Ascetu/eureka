@@ -30,6 +30,8 @@ import java.util.Map;
  * their instance with eureka server.
  *
  * Eureka 应用实例配置抽象基类
+ * 很多属性都关联到com.netflix.appinfo.InstanceConfig todo 找不到，难道就是EurekaInstanceConfig的意思？
+ * 几个重要默认值：30秒续约频率，90秒过期时间，默认初始化后不开启流量（即还不能访问），http而不是https
  *
  * @author Karthik Ranganathan
  */
@@ -241,6 +243,13 @@ public abstract class AbstractInstanceConfig implements EurekaInstanceConfig {
         return hostInfo.first();
     }
 
+
+    /**
+     * 多网卡、虚拟网卡情况下，可能会出问题，需要手动配置本机host信息
+     * first       : second
+     * hostAddress : hostName
+     * @return pair of hostAddress:hostName
+     */
     private static Pair<String, String> getHostInfo() {
         Pair<String, String> pair;
         try {
