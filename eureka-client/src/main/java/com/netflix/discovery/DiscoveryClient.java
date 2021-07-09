@@ -168,6 +168,7 @@ public class DiscoveryClient implements EurekaClient {
     private volatile InstanceInfo.InstanceStatus lastRemoteInstanceStatus = InstanceInfo.InstanceStatus.UNKNOWN;
     /**
      * Eureka 事件监听器
+     * todo 为什么是CopyOnWriteArraySet？
      */
     private final CopyOnWriteArraySet<EurekaEventListener> eventListeners = new CopyOnWriteArraySet<>();
 
@@ -182,10 +183,12 @@ public class DiscoveryClient implements EurekaClient {
     private ApplicationInfoManager.StatusChangeListener statusChangeListener;
     /**
      * 应用实例信息复制器
+     * todo 关联ReplicaIntervalSeconds，搞清楚用途
      */
     private InstanceInfoReplicator instanceInfoReplicator;
     /**
      * 注册信息的应用实例数
+     * todo ？？？这是什么个数
      */
     private volatile int registrySize = 0;
     /**
@@ -198,6 +201,7 @@ public class DiscoveryClient implements EurekaClient {
     private volatile long lastSuccessfulHeartbeatTimestamp = -1;
     /**
      * 心跳监控
+     * todo 和JMX有关系吗？
      */
     private final ThresholdLevelsMetric heartbeatStalenessMonitor;
     /**
@@ -368,11 +372,11 @@ public class DiscoveryClient implements EurekaClient {
 
         fetchRegistryGeneration = new AtomicLong(0);
 
-        // 【3.2.6】获取哪些 Region 集合的注册信息
+        // 【3.2.6】获取哪些 Region 集合的注册信息 todo 在没有用aws的情况下，这个值是什么？
         remoteRegionsToFetch = new AtomicReference<>(clientConfig.fetchRegistryForRemoteRegions());
         remoteRegionsRef = new AtomicReference<>(remoteRegionsToFetch.get() == null ? null : remoteRegionsToFetch.get().split(","));
 
-        // 【3.2.7】初始化拉取、心跳的监控
+        // 【3.2.7】初始化拉取、心跳的监控 todo 干嘛用的 servo
         if (config.shouldFetchRegistry()) {
             this.registryStalenessMonitor = new ThresholdLevelsMetric(this, METRIC_REGISTRY_PREFIX + "lastUpdateSec_", new long[]{15L, 30L, 60L, 120L, 240L, 480L});
         } else {
@@ -410,6 +414,9 @@ public class DiscoveryClient implements EurekaClient {
 
         try {
             // 【3.2.9】初始化线程池
+            //scheduler，定时任务线程池，初始化大小为 2，一个给 heartbeatExecutor，一个给 cacheRefreshExecutor。
+            //heartbeatExecutor、cacheRefreshExecutor 在提交给 scheduler 才声明具体的任务 ：后面的initScheduledTasks
+            // todo scheduler是线程池，heartbeatExecutor、cacheRefreshExecutor也是线程池，那是怎么执行的？关键在：TimedSupervisorTask
             // default size of 2 - 1 each for heartbeat and cacheRefresh
             scheduler = Executors.newScheduledThreadPool(2,
                     new ThreadFactoryBuilder()
@@ -436,10 +443,13 @@ public class DiscoveryClient implements EurekaClient {
             );  // use direct handoff
 
             // 【3.2.10】初始化 Eureka 网络通信相关
+            // todo 没看到定时相关的，为什么叫：scheduleServerEndpointTask？因为schedule是调度的意思，但是还是没有看到和调度（时间）相关的东西
             eurekaTransport = new EurekaTransport();
             scheduleServerEndpointTask(eurekaTransport, args);
 
             // 【3.2.11】初始化 InstanceRegionChecker
+            //availability zone to region mapping
+            //InstanceRegionChecker:null表明本地region 然后localRegion也是localRegion，代表客户端所在的region
             AzToRegionMapper azToRegionMapper;
             if (clientConfig.shouldUseDnsForFetchingServiceUrls()) {
                 azToRegionMapper = new DNSBasedAzToRegionMapper(clientConfig);
@@ -466,6 +476,14 @@ public class DiscoveryClient implements EurekaClient {
         }
 
         // 【3.2.14】初始化定时任务
+        //Schedule.schedule都是延迟执行；只不过1.2是new了一个TimedSupervisorTask，这是一个一直循环执行的定时任务
+        // 1.cacheRefresh 定时拉取app信息
+        // 2.heartbeat 定时renew信息
+        // 调度（Schedule）下面两个：延迟多久执行
+        // 3.应用实例信息复制器（start方法延迟执行）
+        // 4.注册状态监听器（监听到状态变化也会触发应用实例信息复制器执行（按需））
+        // todo 在star这里注册的？是的，延迟一定时间后（getInitialInstanceInfoReplicationIntervalSeconds）注册
+        // todo getInstanceInfoReplicationIntervalSeconds怪怪的，没有看到定时的东西，代码逻辑好像是：监听到
         initScheduledTasks();
 
         // 【3.2.15】向 Servo 注册监控
@@ -609,6 +627,7 @@ public class DiscoveryClient implements EurekaClient {
         return localRegionApps.get();
     }
 
+    // todo localRegionApps remoteRegionVsApps区别
     @Override
     public Applications getApplicationsForARegion(@Nullable String region) {
         if (instanceRegionChecker.isLocalRegion(region)) {
@@ -1017,9 +1036,11 @@ public class DiscoveryClient implements EurekaClient {
         }
 
         // Notify about cache refresh before updating the instance remote status
+        // todo 如何通知监听类 这个cache了什么东西？
         onCacheRefreshed();
 
         // Update remote status based on refreshed data held in the cache
+        //todo 从远程拉取，然后现在去更新远程状态，怪怪的
         updateInstanceRemoteStatus();
 
         // registry was fetched successfully, so return true
@@ -1085,6 +1106,7 @@ public class DiscoveryClient implements EurekaClient {
 
         logger.info("Getting all instance registry info from the eureka server");
 
+//        todo remoteRegionsRef是多少？上面if注释，其他线程没有更新fetchRegistryGeneration，则更新进去
         // 全量获取注册信息
         Applications apps = null;
         EurekaHttpResponse<Applications> httpResponse = clientConfig.getRegistryRefreshSingleVipAddress() == null
@@ -1098,6 +1120,7 @@ public class DiscoveryClient implements EurekaClient {
         // 设置到本地缓存
         if (apps == null) {
             logger.error("The application is null for some reason. Not storing this information");
+            //todo 为什么需要CAS，CAS没有循环，有什么意义呢
         } else if (fetchRegistryGeneration.compareAndSet(currentUpdateGeneration, currentUpdateGeneration + 1)) {
             localRegionApps.set(this.filterAndShuffle(apps));
             logger.debug("Got full registry with apps hashcode {}", apps.getAppsHashCode());
@@ -1130,7 +1153,7 @@ public class DiscoveryClient implements EurekaClient {
         }
 
         if (delta == null) {
-            // 增量获取为空，全量获取
+            // 增量获取为空，全量获取 todo why？如果没有变化，获取到的就是null吧？难道是因为即使没有变化，请求结果也不为空，是一个empty
             logger.warn("The server does not allow the delta revision to be applied because it is not safe. "
                     + "Hence got the full registry.");
             getAndStoreFullRegistry();
@@ -1150,9 +1173,10 @@ public class DiscoveryClient implements EurekaClient {
                 logger.warn("Cannot acquire update lock, aborting getAndUpdateDelta");
             }
             // There is a diff in number of instances for some reason
+            // todo 为什么这两个要想等，不是相同的东西啊
             if (!reconcileHashCode.equals(delta.getAppsHashCode()) // 一致性哈希值不相等
                     || clientConfig.shouldLogDeltaDiff()) { //
-                reconcileAndLogDifference(delta, reconcileHashCode);  // this makes a remoteCall
+                reconcileAndLogDifference(delta, reconcileHashCode);  // this makes a remoteCall：full registry
             }
         } else {
             logger.warn("Not updating application delta as another thread is updating it already");
@@ -1237,6 +1261,7 @@ public class DiscoveryClient implements EurekaClient {
             for (InstanceInfo instance : app.getInstances()) {
                 Applications applications = getApplications();
                 // TODO[0009]：RemoteRegionRegistry
+                // todo 没看明白
                 String instanceRegion = instanceRegionChecker.getInstanceRegion(instance);
                 if (!instanceRegionChecker.isLocalRegion(instanceRegion)) {
                     Applications remoteApps = remoteRegionVsApps.get(instanceRegion);
@@ -1332,6 +1357,7 @@ public class DiscoveryClient implements EurekaClient {
             instanceInfoReplicator = new InstanceInfoReplicator(
                     this,
                     instanceInfo,
+                    // todo 这个时间是频率，同步的频率？那和renew什么区别，并且没有看到根据这个时间的定时任务
                     clientConfig.getInstanceInfoReplicationIntervalSeconds(),
                     2); // burstSize
 
@@ -1351,6 +1377,8 @@ public class DiscoveryClient implements EurekaClient {
                     } else {
                         logger.info("Saw local status change event {}", statusChangeEvent);
                     }
+                    // 状态变化，触发状态监听器，状态监听器按需执行InstanceInfoReplicator（刷新instanceinfo（数据中心、租约、状态），register）
+                    // todo 不明白
                     instanceInfoReplicator.onDemandUpdate();
                 }
             };
@@ -1495,6 +1523,7 @@ public class DiscoveryClient implements EurekaClient {
         }
     }
 
+    // todo cache的是指localRegionApps
     @VisibleForTesting
     void refreshRegistry() {
         try {
@@ -1638,6 +1667,8 @@ public class DiscoveryClient implements EurekaClient {
     /**
      * Invoked when the remote status of this client has changed.
      * Subclasses may override this method to implement custom behavior if needed.
+     *
+     * todo remote status怎么理解？
      *
      * @param oldStatus the previous remote {@link InstanceStatus}
      * @param newStatus the new remote {@link InstanceStatus}

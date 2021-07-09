@@ -180,6 +180,9 @@ public class ApplicationInfoManager {
      * whether it is ready to receive traffic. Setting the status here also notifies all registered listeners
      * of a status change event.
      *
+     * todo InstanceStatusMapper 状态机？
+     * 设置状态，通知listeners：具体有哪些？
+     *
      * @param status Status of the instance
      */
     public synchronized void setInstanceStatus(InstanceStatus status) {
@@ -211,7 +214,7 @@ public class ApplicationInfoManager {
      * Refetches the hostname to check if it has changed. If it has, the entire
      * <code>DataCenterInfo</code> is refetched and passed on to the eureka
      * server on next heartbeat.
-     *
+     * todo 什么时候需要调用此两个方法去刷新？
      * see {@link InstanceInfo#getHostName()} for explanation on why the hostname is used as the default address
      */
     public void refreshDataCenterInfoIfRequired() {

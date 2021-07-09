@@ -46,6 +46,7 @@ import java.util.List;
  * <p>
  * Note that all configurations are not effective at runtime unless and
  * otherwise specified.
+ * todo ？？？？什么意思
  * </p>
  *
  * @author Karthik Ranganathan
@@ -69,6 +70,8 @@ public interface EurekaClientConfig {
      * replicated to the eureka server.
      *
      * 向 Eureka-Server 同步实例对象信息变化频率，单位：秒
+     * todo 和续约renew有什么区别？同步的内容不同？和healthCheck有关？
+     * todo com.netflix.discovery.EurekaClient#registerHealthCheckCallback(com.netflix.appinfo.HealthCheckCallback)
      *
      * @return the instance replication interval in seconds.
      */
@@ -92,6 +95,7 @@ public interface EurekaClientConfig {
      * </p>
      *
      * 轮询获取 Eureka-Server 地址变更频率，单位：秒
+     * todo 也是DNS方式需要的
      *
      * @return the interval to poll for eureka service url changes.
      */
@@ -101,6 +105,7 @@ public interface EurekaClientConfig {
      * Gets the proxy host to eureka server if any.
      *
      * Eureka-Server 代理主机
+     * todo 代理主机是什么？
      *
      * @return the proxy host.
      */
@@ -195,6 +200,7 @@ public interface EurekaClientConfig {
      * to all eureka servers.
      *
      * 所有 Eureka-Server 总连接数
+     * todo 是指connection，还是指注册的实例个数？ 是connection
      *
      * @return total number of allowed connections from eureka client to all
      *         eureka servers.
@@ -206,6 +212,7 @@ public interface EurekaClientConfig {
      * to a eureka server host.
      *
      * 单个 Eureka-Server 总连接数
+     * todo 同上
      *
      * @return total number of allowed connections from eureka client to a
      *         eureka server.
@@ -230,6 +237,7 @@ public interface EurekaClientConfig {
      * </p>
      *
      * Eureka-Server 的 URL Context
+     * DNS方式才需要
      *
      * @return the string indicating the context {@link java.net.URI} of the eureka
      *         server.
@@ -254,6 +262,7 @@ public interface EurekaClientConfig {
      * </p>
      *
      * Eureka-Server 的 Port
+     * DNS方式才需要
      *
      * @return the string indicating the port where the eureka server is
      *         listening.
@@ -346,6 +355,8 @@ public interface EurekaClientConfig {
      * </p>
      *
      * 优先使用相同 Zone 的 Eureka-Server
+     * todo zone是aws的内容？是的，没有使用aws，就是defaultZone，即只有一个zone，所有server都在这个zone里面
+     * 默认是true
      *
      * @return true if the eureka client should prefer the server in the same
      *         zone, false otherwise.
@@ -420,7 +431,7 @@ public interface EurekaClientConfig {
      * Failing to do so, will result in failure of discovery client startup.
      *
      * 获取哪些区域( Region )集合的注册信息
-     * TODO 芋艿：null为获取全部，得再确认下
+     * TODO 芋艿：null为获取全部，得再确认下     ？？？？
      *
      * @return Comma separated list of regions for which the eureka registry information will be fetched.
      * <code>null</code> if no remote region has to be fetched.
@@ -486,6 +497,7 @@ public interface EurekaClientConfig {
      * </p>
      *
      * 是否过滤，只获取状态为开启( Up )的应用实例集合
+     * 默认为true
      *
      * @return true to filter, false otherwise.
      */
@@ -521,6 +533,7 @@ public interface EurekaClientConfig {
      * Indicates whether the client is only interested in the registry information for a single VIP.
      *
      * 只获得一个 `vipAddress` 对应的应用实例们的注册信息。
+     * todo 默认为null，null什么意思？
      *
      * {@link AbstractVIPResource}
      * {@link com.netflix.discovery.shared.transport.EurekaHttpClient#getVip(String, String...)}
@@ -535,6 +548,7 @@ public interface EurekaClientConfig {
      * The thread pool size for the heartbeatExecutor to initialise with
      *
      * 心跳执行线程池大小
+     * todo 默认为5，为什么要多线程？
      *
      * @return the heartbeatExecutor thread pool size
      */
@@ -545,7 +559,8 @@ public interface EurekaClientConfig {
      * It is a maximum multiplier value for retry delay, in case where a sequence of timeouts
      * occurred.
      *
-     * 心跳执行超时后的延迟重试的时间
+     * 心跳执行超时后的延迟重试的时间（幂指数）
+     * 默认10
      *
      * @return maximum multiplier value for retry delay
      */
@@ -555,6 +570,7 @@ public interface EurekaClientConfig {
      * The thread pool size for the cacheRefreshExecutor to initialise with
      *
      * 注册信息缓存刷新线程池大小
+     * todo 怎么确定是注册信息 缓存又是什么缓存？
      *
      * @return the cacheRefreshExecutor thread pool size
      */
@@ -575,6 +591,7 @@ public interface EurekaClientConfig {
      * Get a replacement string for Dollar sign <code>$</code> during serializing/deserializing information in eureka server.
      *
      * Eureka-Server 序列化/反序列化信息时，将 $ 替换成的字符串
+     * todo 干嘛用的？
      *
      * @return Replacement string for Dollar sign <code>$</code>.
      */
@@ -595,6 +612,7 @@ public interface EurekaClientConfig {
      * will trigger on-demand (but rate limited) register/updates to remote eureka servers
      *
      * 是否同步应用实例状态到 Eureka-Server
+     * 默认true
      *
      * @return true or false for whether local status updates should be updated to remote servers on-demand
      */
@@ -620,6 +638,7 @@ public interface EurekaClientConfig {
 
     /**
      * Eureka-Client 可接收数据类型
+     * todo 和gzip区分，一个是压缩，一个是紧凑/宽松数据结构
      *
      * @return {@link com.netflix.appinfo.EurekaAccept#name()} for client data accept
      */

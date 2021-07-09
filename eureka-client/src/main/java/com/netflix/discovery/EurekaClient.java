@@ -24,6 +24,8 @@ import com.netflix.discovery.shared.LookupService;
  *  - provide the ability to get data about the local Client (known regions, own AZ etc)
  *  - provide the ability to register and access the healthcheck handler for the client
  *
+ *  todo 关联：EndpointUtils LookupService HealthCheckHandler
+ *
  * @author David Liu
  */
 @ImplementedBy(DiscoveryClient.class)
@@ -159,6 +161,8 @@ public interface EurekaClient extends LookupService {
      * and subsequently invoke the {@link HealthCheckHandler} in intervals specified
      * by {@link EurekaClientConfig#getInstanceInfoReplicationIntervalSeconds()}.
      *
+     * todo 客户端本身调用健康检查？
+     *
      * @param healthCheckHandler app specific healthcheck handler.
      */
     public void registerHealthCheck(HealthCheckHandler healthCheckHandler);
@@ -172,7 +176,10 @@ public interface EurekaClient extends LookupService {
      * 
      * {@link EurekaEventListener#onEvent} is called from the context of an internal thread 
      * and must therefore return as quickly as possible without blocking.
-     * 
+     *
+     * 状态【state】变化就会触发listener，不进行轮询
+     * 非阻塞：EurekaEventListener#onEvent
+     *
      * @param eventListener
      */
     public void registerEventListener(EurekaEventListener eventListener);

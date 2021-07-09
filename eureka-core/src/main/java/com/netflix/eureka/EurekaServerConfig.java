@@ -149,6 +149,7 @@ public interface EurekaServerConfig {
      * {@link #getRenewalPercentThreshold()} needs to be updated.
      *
      * 自我保护模式比例更新频率，单位：毫秒。
+     * todo 是指比例变化的更新频率？一直去动态查询有没有改变？
      *
      * @return time in milliseconds indicating the interval.
      */
@@ -164,6 +165,7 @@ public interface EurekaServerConfig {
      * </p>
      *
      * Eureka-Server 集群节点更新频率，单位：毫秒。
+     * todo 更新什么？
      *
      * @return timer in milliseconds indicating the interval.
      */
@@ -272,7 +274,8 @@ public interface EurekaServerConfig {
      * Get the time for which the delta information should be cached for the
      * clients to retrieve the value without missing it.
      *
-     * 租约变更记录过期时长，单位：毫秒。
+     * 租约变更记录过期时长，单位：毫秒。 X
+     * todo 应该和租约没关系，应该是说【app改变】的缓存时长，具体还要后面再看
      *
      * @return time in milliseconds
      */
@@ -283,6 +286,7 @@ public interface EurekaServerConfig {
      * check for expired delta information.
      *
      * 移除队列里过期的租约变更记录的定时任务执行频率，单位：毫秒。
+     * todo 【app改变】 队列queue：这个队列是什么？
      *
      * @return time in milliseconds.
      */
@@ -293,6 +297,8 @@ public interface EurekaServerConfig {
      * wake up and run.
      *
      * 租约过期定时任务执行频率，单位：毫秒。
+     * todo 全是说租约，应该是【app改变】 后面不修正了
+     * 剔除instance
      *
      * @return time in milliseconds.
      */
@@ -332,6 +338,8 @@ public interface EurekaServerConfig {
      * if it is not invalidated by change events.
      *
      * 读写缓存写入后过期时间，单位：秒。
+     * 注册表负载 在未因【更改事件】而失效的情况下 应保留在缓存中的时间
+     * todo 为啥要叫response啊
      *
      * @return time in seconds.
      */
@@ -343,6 +351,9 @@ public interface EurekaServerConfig {
      *
      * 只读缓存更新频率，单位：毫秒。
      * 只读缓存定时更新任务只更新读取过请求 (com.netflix.eureka.registry.Key)，因此虽然永不过期，也会存在读取不到的情况。
+     *
+     * 注册表负载 更新频率
+     * todo 没有说明是只读缓存啊？
      *
      * @return time in milliseconds.
      */
@@ -356,6 +367,8 @@ public interface EurekaServerConfig {
      * 否开启只读请求响应缓存。
      * 响应缓存 ( ResponseCache ) 机制目前使用两层缓存策略。
      * 优先读取永不过期的只读缓存，读取不到后读取固定过期的读写缓存。
+     *
+     * 默认开启
      *
      * @return true if the read only cache is to be used
      */
@@ -412,6 +425,8 @@ public interface EurekaServerConfig {
      *
      * 跳过：AWS
      *
+     * todo status replication pool什么玩意儿？
+     *
      * 待执行同步应用实例状态事件缓冲最大数量。
      *
      * @return the maximum number of replication events that can be allowed to
@@ -462,6 +477,8 @@ public interface EurekaServerConfig {
      *
      * 待执行同步应用实例信息事件缓冲最大数量
      *
+     * todo Peer Replication Pool又是什么玩意儿？back up是干嘛的？缓冲？
+     *
      * @return the maximum number of replication events that can be allowed to
      *         back up.
      */
@@ -504,6 +521,8 @@ public interface EurekaServerConfig {
      *
      * 跳过：AWS 使用
      *
+     * 允许最小健康节点数
+     *
      * @return minimum number of available peer replication instances
      *         for this instance to be considered healthy.
      */
@@ -514,6 +533,9 @@ public interface EurekaServerConfig {
      * replication events.
      *
      * 执行单个同步应用实例信息状态任务最大时间
+     *
+     * 在删除复制事件之前尝试复制的时间（以毫秒为单位）
+     * todo 删除事件，事件存到哪里的？
      *
      * @return time in milliseconds
      */
@@ -638,7 +660,7 @@ public interface EurekaServerConfig {
      *
      * 从远程 Eureka-Server 拉取应用注册信息集合。
      * TODOTODO（后面源码在细读，可能要修正）
-     *
+     * todo 没懂Whitelist、null
      * @return A set of application names which must be retrieved from the passed region. If <code>null</code> all
      * applications must be retrieved.
      */

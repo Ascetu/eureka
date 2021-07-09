@@ -285,6 +285,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
                         // Since the client wants to cancel it, reduce the threshold
                         // (1
                         // for 30 seconds, 2 for a minute)
+                        // todo 为什么是30秒，如果renew时间变了呢？
                         this.expectedNumberOfRenewsPerMin = this.expectedNumberOfRenewsPerMin + 2;
                         this.numberOfRenewsPerMinThreshold =
                                 (int) (this.expectedNumberOfRenewsPerMin * serverConfig.getRenewalPercentThreshold());
@@ -307,6 +308,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
             }
             // 添加到 应用实例覆盖状态映射（Eureka-Server 初始化使用）
             // This is where the initial state transfer of overridden status happens
+            // todo overridden status 是什么？
             if (!InstanceStatus.UNKNOWN.equals(registrant.getOverriddenStatus())) {
                 logger.debug("Found overridden status {} for instance {}. Checking to see if needs to be add to the "
                                 + "overrides", registrant.getOverriddenStatus(), registrant.getId());
@@ -324,6 +326,7 @@ public abstract class AbstractInstanceRegistry implements InstanceRegistry {
 
             // 获得 应用实例状态
             // Set the status based on the overridden status rules
+            //todo 规则是什么？有哪些规则？
             InstanceStatus overriddenInstanceStatus = getOverriddenInstanceStatus(registrant, existingLease, isReplication);
             // 设置 应用实例状态
             registrant.setStatusWithoutDirty(overriddenInstanceStatus);

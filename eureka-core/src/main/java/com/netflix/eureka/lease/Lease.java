@@ -93,6 +93,7 @@ public class Lease<T> {
      * associated {@link T} during registration, otherwise default duration is
      * {@link #DEFAULT_DURATION_IN_SECS}.
      */
+    // todo 为啥是+duration？
     public void renew() {
         lastUpdateTimestamp = System.currentTimeMillis() + duration;
     }

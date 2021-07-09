@@ -264,7 +264,7 @@ public class Applications {
      * Gets the reconciliation hashcode. The hashcode is used to determine
      * whether the applications list has changed since the last time it was
      * acquired.
-     * 
+     * todo 看一下一致性hash的计算
      * @param instanceCountMap
      *            the instance count map to use for generating the hash
      * @return the hash code for this instance

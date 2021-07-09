@@ -4,13 +4,14 @@ import com.netflix.discovery.shared.resolver.aws.ApplicationsResolver;
 
 /**
  * Config class that governs configurations relevant to the transport layer
- *
+ * todo AsyncResolver ApplicationsResolver
  * @author David Liu
  */
 public interface EurekaTransportConfig {
 
     /**
      * EurekaHttpClient 会话周期性重连时间，单位：秒
+     * todo 会话周期性重连是什么意思？
      *
      * {@link com.netflix.discovery.shared.transport.decorator.SessionedEurekaHttpClient}
      *
@@ -49,7 +50,7 @@ public interface EurekaTransportConfig {
 
     /**
      * 异步解析 EndPoint 集群频率，单位：毫秒。
-     *
+     * cached version of the endpoint list
      * {@link com.netflix.discovery.shared.resolver.AsyncResolver}
      *
      * @return the interval to poll for the async resolver.

@@ -50,6 +50,8 @@ public interface LookupService<T> {
      * in id. A single {@link InstanceInfo} can possibly be registered w/ more
      * than one {@link Application}s
      *
+     * todo 单个instanceInfo可能会注册多个applications？？？？？？
+     *
      * @param id
      * @return {@link List} of {@link InstanceInfo}s or
      *         {@link java.util.Collections#emptyList()}

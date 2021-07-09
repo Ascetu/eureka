@@ -8,6 +8,7 @@ import static com.netflix.discovery.shared.transport.PropertyBasedTransportConfi
  * @author David Liu
  *
  * 基于配置文件的网络传输配置实现类
+ * todo 还是没搞懂，这些配置都是做什么用的
  */
 public class DefaultEurekaTransportConfig implements EurekaTransportConfig {
 

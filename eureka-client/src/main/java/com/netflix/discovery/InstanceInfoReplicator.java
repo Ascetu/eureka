@@ -112,7 +112,7 @@ class InstanceInfoReplicator implements Runnable {
                         logger.debug("Canceling the latest scheduled update, it will be rescheduled at the end of on demand update");
                         latestPeriodic.cancel(false);
                     }
-                    // 再次调用
+                    // 再次调用 todo InstanceInfoReplicator 功能是什么？
                     InstanceInfoReplicator.this.run();
                 }
             });
@@ -131,7 +131,7 @@ class InstanceInfoReplicator implements Runnable {
             // 判断 应用实例信息 是否数据不一致
             Long dirtyTimestamp = instanceInfo.isDirtyWithTime();
             if (dirtyTimestamp != null) {
-                // 发起注册
+                // 发起注册 todo 为什么是注册？这个replic到底是干嘛的？
                 discoveryClient.register();
                 // 设置 应用实例信息 数据一致
                 instanceInfo.unsetIsDirty(dirtyTimestamp);
